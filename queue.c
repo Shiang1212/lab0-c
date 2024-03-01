@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "queue.h"
 
@@ -24,22 +25,43 @@ struct list_head *q_new()
 /* Free all storage used by queue */
 void q_free(struct list_head *head) 
 {
-    while(head)
-    {
-        free(head);
-        head = head->next;
-    }
+    if (!head)
+        return;
+    element_t *entry, *safe;
+    list_for_each_entry_safe (entry, safe, head, list)
+    q_release_element(entry);
+    free(head);
+
+    return;
 }
 
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    element_t *new = malloc(sizeof(element_t));
+    if(!new)
+        return false;
+    new->value = malloc(sizeof(s) + 1);
+    if(!new->value)
+        return false;
+    strcpy(new->value, s);
+    list_add(&new->list, head);
+
     return true;
 }
 
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    element_t *new = malloc(sizeof(element_t));
+    if(!new)
+        return false;
+    new->value = malloc(sizeof(s) + 1);
+    if(!new->value)
+        return false;
+    strcpy(new->value, s);
+    list_add_tail(&new->list, head);
+
     return true;
 }
 
@@ -58,14 +80,43 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 /* Return number of elements in queue */
 int q_size(struct list_head *head)
 {
-    return -1;
+    if(!head)
+        return 0;
+    int cnt = 1;
+    struct list_head *temp = head;
+    for(temp = temp->next; temp != head; temp = temp->next)
+    {
+        cnt++;
+    }
+    return cnt;
+
+    //return -1;
 }
 
 /* Delete the middle node in queue */
 bool q_delete_mid(struct list_head *head)
 {
-    // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+    if(head->next == NULL)
+    {
+        head = NULL;
+        return true;
+    }
+    float list_cnt = 0;
+    float i = 0;
+    struct list_head *curr, *prev;
+    for(curr = head; curr != NULL; curr = curr->next)
+    {
+        list_cnt++;
+    }
+    for(prev = head, curr = head->next; i < floor(list_cnt / 2) - 1 ; i++)
+    {
+        curr = curr->next;
+        prev = prev->next;
+    }
+    prev->next = curr->next;
     return true;
+    // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+ 
 }
 
 /* Delete all nodes that have duplicate string */
